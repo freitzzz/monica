@@ -1,0 +1,38 @@
+package mq
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/pebbe/zmq4"
+)
+
+const (
+	serverHostEnvKey = "server_host"
+	serverPortEnvKey = "server_port"
+)
+
+var (
+	serverHost = os.Getenv(serverHostEnvKey)
+	serverPort = os.Getenv(serverPortEnvKey)
+)
+
+func NewContext() (*zmq4.Context, error) {
+	return zmq4.NewContext()
+}
+
+func Start(ctx *zmq4.Context) (*zmq4.Socket, error) {
+	addr := serverAddress()
+
+	s, err := ctx.NewSocket(zmq4.REP)
+
+	if err == nil {
+		err = s.Bind(addr)
+	}
+
+	return s, err
+}
+
+func serverAddress() string {
+	return fmt.Sprintf("tcp://%s:%s", serverHost, serverPort)
+}
