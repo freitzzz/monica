@@ -8,7 +8,7 @@ import (
 	"github.com/pebbe/zmq4"
 )
 
-func Handle(s *zmq4.Socket) {
+func RegisterHandlers(s *zmq4.Socket) {
 	for {
 		b, err := s.RecvBytes(0)
 
