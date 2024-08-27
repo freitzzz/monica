@@ -3,38 +3,44 @@ package mq
 import "github.com/freitzzz/monica/internal/schema"
 
 const (
-	nodeAdvertisement = 0
-	nodeStats         = 1
+	publishNodeInformationRoute = 0
+	publishNodeStatsRoute       = 1
+	lookupAllStatsRoute         = 99
 )
 
 // Handles a message based on the route id that is extracted from the message.
 // Message = [<route_id>, <encoded struct bitstream>...]
 func handleMessage(
 	b []byte,
-	onNodeAdvertisement func(schema.Advertisement) error,
-	onNodeStats func(schema.Stats) error,
-	onUnrecognizedMessage func(any) error,
-) error {
+	onPublishNodeInformation func(schema.NodeInfo) ReplyMessage,
+	onPublishNodeStats func(schema.NodeUsage) ReplyMessage,
+	onLookupAllStats func() ReplyMessage,
+	onUnrecognizedMessage func(any) ReplyMessage,
+) ReplyMessage {
 	rid := b[0]
 	b = b[1:]
 
 	switch rid {
-	case nodeAdvertisement:
-		return decodeAndCallback(b, onNodeAdvertisement)
-	case nodeStats:
-		return decodeAndCallback(b, onNodeStats)
+	case publishNodeInformationRoute:
+		return decodeAndCallback(b, onPublishNodeInformation)
+	case publishNodeStatsRoute:
+		return decodeAndCallback(b, onPublishNodeStats)
+	case lookupAllStatsRoute:
+		return onLookupAllStats()
 	default:
 		return decodeAndCallback(b, onUnrecognizedMessage)
 	}
 }
 
 // Wraps message [Decode] call and if it doesn't fail, passes the decoded struct to a callback.
-func decodeAndCallback[T any](b []byte, cb func(T) error) error {
+func decodeAndCallback[T any](b []byte, cb func(T) ReplyMessage) ReplyMessage {
 	d, err := Decode[T](b)
 
 	if err == nil {
 		return cb(d)
 	}
 
-	return err
+	return ReplyMessage{
+		Error: err,
+	}
 }

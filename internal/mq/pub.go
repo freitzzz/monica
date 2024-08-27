@@ -65,14 +65,14 @@ func publishNode(s *zmq4.Socket) (bool, error) {
 		return false, err
 	}
 
-	adv := schema.Advertisement{
+	adv := schema.NodeInfo{
 		ID:       "minion-01",
 		Hostname: rs[0],
 		Type:     rs[1],
 		Hardware: rs[2],
 	}
 
-	return SendRouteMessage(s, nodeAdvertisement, adv)
+	return SendRouteMessage(s, publishNodeInformationRoute, adv)
 }
 
 func publishStats(s *zmq4.Socket) (bool, error) {
@@ -84,11 +84,11 @@ func publishStats(s *zmq4.Socket) (bool, error) {
 		return false, err
 	}
 
-	stats := schema.Stats{
+	stats := schema.NodeUsage{
 		ID:  "minion-01",
 		CPU: rs[0],
 		RAM: rs[1],
 	}
 
-	return SendRouteMessage(s, nodeStats, stats)
+	return SendRouteMessage(s, publishNodeStatsRoute, stats)
 }

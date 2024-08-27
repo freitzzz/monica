@@ -3,7 +3,13 @@ package mq
 import (
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 )
+
+type ReplyMessage struct {
+	Error error
+	Data  any
+}
 
 // Nodes should use this function to encode messages
 // to send to central-server.
@@ -41,4 +47,35 @@ func Decode[T any](b []byte) (T, error) {
 	err := enc.Decode(&v)
 
 	return v, err
+}
+
+func ErrorReplyMessage(err error) ReplyMessage {
+	return ReplyMessage{
+		Error: err,
+	}
+}
+
+func OkReplyMessage() ReplyMessage {
+	return ReplyMessage{
+		Data: true,
+	}
+}
+
+func NotOkReplyMessage() ReplyMessage {
+	return ReplyMessage{
+		Data: false,
+	}
+}
+
+func EmptyReplyMessage() ReplyMessage {
+	return ReplyMessage{}
+}
+
+func JSONReplyMessage(v any) ReplyMessage {
+	b, err := json.Marshal(v)
+
+	return ReplyMessage{
+		Data:  b,
+		Error: err,
+	}
 }

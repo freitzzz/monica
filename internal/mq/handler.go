@@ -26,12 +26,15 @@ func RegisterHandlers(s *zmq4.Socket) {
 			continue
 		}
 
-		err = handleMessage(
+		rpm := handleMessage(
 			b,
 			onNodeAdvertisement,
 			onNodeStats,
+			onLookupNodes,
 			onUnrecognizedMessage,
 		)
+
+		err = rpm.Error
 
 		if err != nil {
 			logging.Aspirador.Error(fmt.Sprintf("failed to process message: %v", err))
@@ -40,27 +43,46 @@ func RegisterHandlers(s *zmq4.Socket) {
 			continue
 		}
 
-		ReplyOK(s)
+		Reply(s, rpm)
 	}
 }
 
-func onNodeAdvertisement(adv schema.Advertisement) error {
+func onNodeAdvertisement(adv schema.NodeInfo) ReplyMessage {
 	nid := adv.ID
 	if _, err := Lookup(nid); err == nil {
-		return fmt.Errorf("node (%s) has been advertised before", nid)
+		return ReplyMessage{
+			Error: fmt.Errorf("node (%s) has been advertised before", nid),
+		}
 	}
 
-	Insert(nid, nil)
+	Insert(adv)
 
-	return nil
+	return OkReplyMessage()
 }
 
-func onNodeStats(stats schema.Stats) error {
-	Insert(stats.ID, &stats)
+func onNodeStats(usage schema.NodeUsage) ReplyMessage {
+	nid := usage.ID
+	if _, err := Lookup(nid); err != nil {
+		return ReplyMessage{
+			Error: fmt.Errorf("node (%s) hasn't been advertised before", nid),
+		}
+	}
 
-	return nil
+	Update(usage)
+
+	return OkReplyMessage()
 }
 
-func onUnrecognizedMessage(m any) error {
-	return fmt.Errorf("did not recognize message: %v", m)
+func onLookupNodes() ReplyMessage {
+	nodes, err := ToNodes()
+
+	if err != nil {
+		return ErrorReplyMessage(err)
+	}
+
+	return JSONReplyMessage(nodes)
+}
+
+func onUnrecognizedMessage(m any) ReplyMessage {
+	return ErrorReplyMessage(fmt.Errorf("did not recognize message: %v", m))
 }
