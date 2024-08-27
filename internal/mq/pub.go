@@ -2,6 +2,8 @@ package mq
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/freitzzz/monica/internal/core"
@@ -10,7 +12,30 @@ import (
 	"github.com/pebbe/zmq4"
 )
 
-const sleep = time.Duration(1) * time.Second
+const (
+	delayLookupStatsMSEnvKey = "delay_lookup_stats_ms"
+	lookupDelayFallbackMS    = 1000
+)
+
+var (
+	delayLookupStatsMS = os.Getenv(serverHostEnvKey)
+	lookupDelay        time.Duration
+)
+
+func init() {
+	if delay, err := strconv.ParseInt(delayLookupStatsMS, 10, 64); err == nil {
+		lookupDelay = time.Duration(delay) * time.Millisecond
+	} else {
+		lookupDelay = time.Duration(lookupDelayFallbackMS) * time.Millisecond
+
+		logging.Aspirador.Error(
+			fmt.Sprintf(
+				"failed to convert %s from env key (%s). falling back to %d",
+				delayLookupStatsMS, delayLookupStatsMSEnvKey, lookupDelayFallbackMS,
+			),
+		)
+	}
+}
 
 func RegisterPub(s *zmq4.Socket) {
 	var err error
@@ -27,7 +52,7 @@ func RegisterPub(s *zmq4.Socket) {
 			logging.Aspirador.Error(fmt.Sprintf("failed publishing message %v", err))
 		}
 
-		time.Sleep(sleep)
+		time.Sleep(lookupDelay)
 	}
 }
 
