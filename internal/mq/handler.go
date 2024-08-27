@@ -14,13 +14,15 @@ func RegisterHandlers(s *zmq4.Socket) {
 
 		if err != nil {
 			logging.Aspirador.Error(fmt.Sprintf("s.Recv call failed: %v", err))
-			replyNok(s)
+
+			ReplyNOK(s)
 			continue
 		}
 
 		if len(b) == 0 {
 			logging.Aspirador.Error("empty message")
-			replyNok(s)
+
+			ReplyNOK(s)
 			continue
 		}
 
@@ -33,11 +35,12 @@ func RegisterHandlers(s *zmq4.Socket) {
 
 		if err != nil {
 			logging.Aspirador.Error(fmt.Sprintf("failed to process message: %v", err))
-			replyNok(s)
+
+			ReplyNOK(s)
 			continue
 		}
 
-		replyOk(s)
+		ReplyOK(s)
 	}
 }
 
@@ -60,12 +63,4 @@ func onNodeStats(stats schema.Stats) error {
 
 func onUnrecognizedMessage(m any) error {
 	return fmt.Errorf("did not recognize message: %v", m)
-}
-
-func replyOk(s *zmq4.Socket) (int, error) {
-	return s.Send("ok", 0)
-}
-
-func replyNok(s *zmq4.Socket) (int, error) {
-	return s.Send("nok", 0)
 }

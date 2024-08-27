@@ -33,6 +33,22 @@ func Start(ctx *zmq4.Context) (*zmq4.Socket, error) {
 	return s, err
 }
 
+func Connect(ctx *zmq4.Context) (*zmq4.Socket, error) {
+	addr := ServerAddress()
+
+	s, err := ctx.NewSocket(zmq4.REQ)
+
+	if err == nil {
+		err = s.Connect(addr)
+	}
+
+	return s, err
+}
+
+func Close(s *zmq4.Socket) error {
+	return s.Close()
+}
+
 func ServerAddress() string {
 	return fmt.Sprintf("tcp://%s:%s", serverHost, serverPort)
 }
