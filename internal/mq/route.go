@@ -8,8 +8,6 @@ const (
 	lookupAllStatsRoute         = 99
 )
 
-// Handles a message based on the route id that is extracted from the message.
-// Message = [<route_id>, <encoded struct bitstream>...]
 func handleMessage(
 	b []byte,
 	onPublishNodeInformation func(schema.NodeInfo) ReplyMessage,

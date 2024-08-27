@@ -7,9 +7,10 @@ func Collect[T any](
 	var r []T
 
 	for _, cb := range cbs {
-		cbr, err := cb()
+		cbr, cberr := cb()
 
-		if err != nil {
+		if cberr != nil {
+			err = cberr
 			break
 		}
 

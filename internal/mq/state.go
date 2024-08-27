@@ -7,22 +7,22 @@ import (
 )
 
 // Holds the state of current advertised nodes usage.
+var state = make(State)
+
 type State = map[string]*nodeState
 type nodeState struct {
 	Info  schema.NodeInfo
 	Usage schema.NodeUsage
 }
 
-var state = make(State)
-
-// Starts tracking a node
+// Starts tracking a node.
 func Insert(info schema.NodeInfo) {
 	state[info.ID] = &nodeState{
 		Info: info,
 	}
 }
 
-// Update node usage
+// Update node usage.
 func Update(usage schema.NodeUsage) {
 	state[usage.ID].Usage = usage
 }

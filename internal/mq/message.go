@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"encoding/json"
+	"fmt"
 )
 
 type ReplyMessage struct {
@@ -41,10 +42,14 @@ func Decode[T any](b []byte) (T, error) {
 	var buf bytes.Buffer
 	var v T
 
-	buf.Write(b)
+	n, err := buf.Write(b)
+
+	if n != len(b) || err != nil {
+		return v, fmt.Errorf("couldn't write all bytes to buffer")
+	}
 
 	enc := gob.NewDecoder(&buf)
-	err := enc.Decode(&v)
+	err = enc.Decode(&v)
 
 	return v, err
 }

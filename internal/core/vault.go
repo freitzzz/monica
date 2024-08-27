@@ -2,12 +2,12 @@ package core
 
 import "github.com/freitzzz/monica/internal/data"
 
+var global vault
+
 type vault struct {
 	OSRepository    data.OSRepository
 	UsageRepository data.UsageRepository
 }
-
-var global vault
 
 func init() {
 	global = vault{

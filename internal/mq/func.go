@@ -100,3 +100,9 @@ func replyRaw(s *zmq4.Socket, b []byte) error {
 
 	return nil
 }
+
+func LogReplyError(err error) {
+	if err != nil {
+		logging.Aspirador.Error(fmt.Sprintf("received error from reply call: %v", err))
+	}
+}
