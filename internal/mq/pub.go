@@ -32,7 +32,8 @@ func RegisterPub(s *zmq4.Socket) {
 }
 
 func publishNode(s *zmq4.Socket) (bool, error) {
-	repo := core.Global.OSRepository
+	vault := core.Vault()
+	repo := vault.OSRepository
 	rs, err := core.Collect(repo.Hostname, repo.Type, repo.Hardware)
 
 	if err != nil {
@@ -50,7 +51,8 @@ func publishNode(s *zmq4.Socket) (bool, error) {
 }
 
 func publishStats(s *zmq4.Socket) (bool, error) {
-	repo := core.Global.UsageRepository
+	vault := core.Vault()
+	repo := vault.UsageRepository
 	rs, err := core.Collect(repo.CPU, repo.RAM)
 
 	if err != nil {
