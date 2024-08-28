@@ -47,13 +47,16 @@ func observe(s *zmq4.Socket) {
 			for _, n := range nodes {
 				println(
 					fmt.Sprintf(
-						"Node\nHostname: %s\nDistribution: %s\nHardware: %s\nType: %s\nCPU: %f\nRAM: %f",
+						"Node (%s)\nHostname: %s\nDistribution: %s\nHardware: %s\nType: %s\nCPU: %f\nRAM: %f\nDisk: %f\nUptime: %d (sec)",
+						n.ID,
 						n.OS.Hostname,
 						n.OS.Distribution,
 						n.OS.Hardware,
 						n.OS.Type,
-						n.Usage.CPU,
-						n.Usage.RAM,
+						n.Usage.CPU.Used,
+						n.Usage.RAM.Used,
+						n.Usage.Disk.Used,
+						n.Usage.Uptime,
 					),
 				)
 			}

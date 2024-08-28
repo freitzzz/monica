@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/freitzzz/monica/internal/core"
 	"github.com/freitzzz/monica/internal/logging"
 	"github.com/freitzzz/monica/internal/schema"
+	"github.com/freitzzz/monica/internal/state"
 	"github.com/pebbe/zmq4"
 )
 
@@ -57,37 +57,24 @@ func RegisterPub(s *zmq4.Socket) {
 }
 
 func publishNode(s *zmq4.Socket) (bool, error) {
-	vault := core.Vault()
-	repo := vault.OSRepository
-	rs, err := core.Collect(repo.Hostname, repo.Type, repo.Hardware)
-
-	if err != nil {
-		return false, err
-	}
-
 	adv := schema.NodeInfo{
-		ID:       "minion-01",
-		Hostname: rs[0],
-		Type:     rs[1],
-		Hardware: rs[2],
+		ID:           state.Id(),
+		Hostname:     state.GetHostname(),
+		Type:         state.GetType(),
+		Hardware:     state.GetHardware(),
+		Distribution: state.GetDistribution(),
 	}
 
 	return SendRouteMessage(s, publishNodeInformationRoute, adv)
 }
 
 func publishStats(s *zmq4.Socket) (bool, error) {
-	vault := core.Vault()
-	repo := vault.UsageRepository
-	rs, err := core.Collect(repo.CPU, repo.RAM)
-
-	if err != nil {
-		return false, err
-	}
-
 	stats := schema.NodeUsage{
-		ID:  "minion-01",
-		CPU: rs[0],
-		RAM: rs[1],
+		ID:     state.Id(),
+		CPU:    state.GetCPUUsage(),
+		RAM:    state.GetRAMUsage(),
+		Disk:   state.GetDiskUsage(),
+		Uptime: state.GetUptime(),
 	}
 
 	return SendRouteMessage(s, publishNodeStatsRoute, stats)

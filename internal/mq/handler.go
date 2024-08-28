@@ -5,6 +5,7 @@ import (
 
 	"github.com/freitzzz/monica/internal/logging"
 	"github.com/freitzzz/monica/internal/schema"
+	"github.com/freitzzz/monica/internal/state"
 	"github.com/pebbe/zmq4"
 )
 
@@ -49,32 +50,32 @@ func RegisterHandlers(s *zmq4.Socket) {
 
 func onNodeAdvertisement(adv schema.NodeInfo) ReplyMessage {
 	nid := adv.ID
-	if _, err := Lookup(nid); err == nil {
+	if _, err := state.Lookup(nid); err == nil {
 		return ReplyMessage{
 			Error: fmt.Errorf("node (%s) has been advertised before", nid),
 		}
 	}
 
-	Insert(adv)
+	state.Insert(adv)
 
 	return OkReplyMessage()
 }
 
 func onNodeStats(usage schema.NodeUsage) ReplyMessage {
 	nid := usage.ID
-	if _, err := Lookup(nid); err != nil {
+	if _, err := state.Lookup(nid); err != nil {
 		return ReplyMessage{
 			Error: fmt.Errorf("node (%s) hasn't been advertised before", nid),
 		}
 	}
 
-	Update(usage)
+	state.Update(usage)
 
 	return OkReplyMessage()
 }
 
 func onLookupNodes() ReplyMessage {
-	nodes, err := ToNodes()
+	nodes, err := state.ToNodes()
 
 	if err != nil {
 		return ErrorReplyMessage(err)
