@@ -3,34 +3,58 @@ package data
 import (
 	"time"
 
+	"github.com/freitzzz/monica/internal/schema"
 	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/disk"
+	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 )
 
 type UsageRepository interface {
-	CPU() (float64, error)
-	RAM() (float64, error)
+	CPU() (schema.CPUUsage, error)
+	RAM() (schema.RAMUsage, error)
+	Disk() (schema.DiskUsage, error)
+	Uptime() (uint64, error)
 }
 
 type GopsUtilUsageRepository struct {
 }
 
-func (r GopsUtilUsageRepository) CPU() (float64, error) {
+func (r GopsUtilUsageRepository) CPU() (schema.CPUUsage, error) {
+	var usage schema.CPUUsage
 	stats, err := cpu.Percent(time.Duration(0), false)
 
 	if err == nil {
-		return stats[0], err
+		usage.Used = stats[0]
 	}
 
-	return 0, err
+	return usage, err
 }
 
-func (r GopsUtilUsageRepository) RAM() (float64, error) {
+func (r GopsUtilUsageRepository) RAM() (schema.RAMUsage, error) {
+	var usage schema.RAMUsage
 	vm, err := mem.VirtualMemory()
 
 	if err == nil {
-		return vm.UsedPercent, err
+		usage.Used = vm.UsedPercent
+		usage.Total = vm.Total
 	}
 
-	return 0, err
+	return usage, err
+}
+
+func (r GopsUtilUsageRepository) Disk() (schema.DiskUsage, error) {
+	var usage schema.DiskUsage
+	dsk, err := disk.Usage("/")
+
+	if err == nil {
+		usage.Used = dsk.UsedPercent
+		usage.Total = dsk.Total
+	}
+
+	return usage, nil
+}
+
+func (r GopsUtilUsageRepository) Uptime() (uint64, error) {
+	return host.Uptime()
 }

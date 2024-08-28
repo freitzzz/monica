@@ -10,8 +10,10 @@ type Node struct {
 		Hardware     string `json:"hardware"`
 	} `json:"os"`
 	Usage struct {
-		CPU float64 `json:"cpu"`
-		RAM float64 `json:"ram"`
+		CPU    CPUUsage  `json:"cpu"`
+		RAM    RAMUsage  `json:"ram"`
+		Disk   DiskUsage `json:"disk"`
+		Uptime uint64    `json:"uptime"`
 	} `json:"usage"`
 }
 
@@ -24,9 +26,25 @@ type NodeInfo struct {
 }
 
 type NodeUsage struct {
-	ID  string
-	CPU float64
-	RAM float64
+	ID     string
+	Uptime uint64
+	CPU    CPUUsage
+	RAM    RAMUsage
+	Disk   DiskUsage
+}
+
+type CPUUsage struct {
+	Used float64
+}
+
+type RAMUsage struct {
+	Used  float64
+	Total uint64
+}
+
+type DiskUsage struct {
+	Used  float64
+	Total uint64
 }
 
 func ToNode(info NodeInfo, usage NodeUsage) Node {
@@ -41,6 +59,8 @@ func ToNode(info NodeInfo, usage NodeUsage) Node {
 
 	n.Usage.CPU = usage.CPU
 	n.Usage.RAM = usage.RAM
+	n.Usage.Disk = usage.Disk
+	n.Usage.Uptime = usage.Uptime
 
 	return n
 }
